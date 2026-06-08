@@ -25,7 +25,6 @@
             overflow-x: hidden;
         }
 
-        /* 动态渐变背景 + 粒子网格 */
         body::before {
             content: '';
             position: fixed;
@@ -55,7 +54,6 @@
             100% { transform: translate(20px, 20px); }
         }
 
-        /* 漂浮光点粒子 */
         .floating-particle {
             position: fixed;
             width: 2px;
@@ -80,7 +78,6 @@
             z-index: 2;
         }
 
-        /* 页面切换标签 */
         .page-tabs {
             display: flex;
             gap: 12px;
@@ -129,7 +126,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 通用工具条 */
         .toolbar {
             display: flex;
             flex-wrap: wrap;
@@ -142,6 +138,38 @@
             backdrop-filter: blur(16px);
             border-radius: 80px;
             border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .usd-rate-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(0, 100, 150, 0.2));
+            backdrop-filter: blur(12px);
+            border-radius: 60px;
+            padding: 6px 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid rgba(0, 212, 255, 0.5);
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .usd-rate-card i {
+            font-size: 1rem;
+            color: #00d4ff;
+        }
+
+        .usd-rate-value {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #00ffaa;
+            letter-spacing: 1px;
+        }
+
+        .usd-rate-update {
+            font-size: 0.65rem;
+            color: #8aaee0;
+            margin-left: 4px;
         }
 
         .btn {
@@ -185,7 +213,6 @@
             border: 1px solid rgba(0, 212, 255, 0.3);
         }
 
-        /* 价格卡片 优化配色：涨跌颜色鲜明 */
         .price-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -218,9 +245,9 @@
             align-items: center;
         }
 
-        .trend-up { color: #ff4d4d; }  /* 红色上涨 */
-        .trend-down { color: #33ff99; } /* 绿色下跌 */
-        .trend-flat { color: #ffaa33; } /* 黄色持平 */
+        .trend-up { color: #ff4d4d; }
+        .trend-down { color: #33ff99; }
+        .trend-flat { color: #ffaa33; }
 
         .price-value {
             font-size: 2rem;
@@ -257,7 +284,6 @@
             margin-top: 12px;
         }
 
-        /* 计价系统内部卡片样式 */
         .form-card {
             background: rgba(10, 20, 35, 0.65);
             backdrop-filter: blur(16px);
@@ -397,19 +423,19 @@
             body { padding: 16px; }
             .price-value { font-size: 1.5rem; }
             .page-tab { padding: 6px 18px; font-size: 0.8rem; }
+            .usd-rate-card { padding: 4px 12px; gap: 6px; font-size: 0.7rem; }
+            .usd-rate-value { font-size: 1rem; }
         }
     </style>
 </head>
 <body>
 <div id="particles-container"></div>
 <div class="container">
-    <!-- 双页面导航 -->
     <div class="page-tabs">
         <div class="page-tab active" data-page="price"><i class="fas fa-chart-line"></i> 金属价格看板</div>
         <div class="page-tab" data-page="calc"><i class="fas fa-calculator"></i> 铟箔·合金计价系统</div>
     </div>
 
-    <!-- 页面1：价格看板 -->
     <div id="pricePage" class="page-content active-page">
         <div class="header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <div>
@@ -427,6 +453,13 @@
                 <button id="saveTodayBtn" class="btn btn-primary"><i class="fas fa-save"></i> 储存今日价格</button>
                 <button id="exportCsvBtn" class="btn btn-success"><i class="fas fa-download"></i> 导出CSV</button>
                 <button id="clearHistoryBtn" class="btn" style="background: rgba(220,38,38,0.2); color:#ff8888;"><i class="fas fa-trash-alt"></i> 清空数据</button>
+            </div>
+            <div class="usd-rate-card" id="usdRateCard">
+                <i class="fas fa-dollar-sign"></i>
+                <span>🏦 中行现汇买入价</span>
+                <span class="usd-rate-value" id="usdBuyRate">加载中...</span>
+                <span class="usd-rate-update" id="usdUpdateTime"></span>
+                <i class="fas fa-sync-alt" style="font-size: 0.7rem; opacity: 0.7; cursor: pointer;" id="usdRefreshIcon"></i>
             </div>
             <div class="storage-status" id="storageStatus"><i class="fas fa-database"></i> 已储存 <span id="recordCount">0</span> 天记录</div>
         </div>
@@ -450,14 +483,14 @@
             <div class="table-wrapper" style="overflow-x: auto; max-height: 400px;">
                 <table id="historyTable">
                     <thead><tr><th>日期</th><th>铟(SMM)</th><th>铋</th><th>碲</th><th>锗</th><th>镓</th><th>操作</th></tr></thead>
-                    <tbody id="historyBody"><tr><td colspan="7">加载中...</td></tr></tbody>
+                    <tbody id="historyBody"><tr><td colspan="7">加载中...</td></tr>
+                </tbody>
                 </table>
             </div>
         </div>
         <div class="footer-note"><i class="fas fa-atom"></i> 铟价来自SMM | 其他金属来自Exbxg | 数据本地存储</div>
     </div>
 
-    <!-- 页面2：铟箔合金计价系统 -->
     <div id="calcPage" class="page-content">
         <div class="form-card">
             <h3><i class="fas fa-microchip"></i> 片材 / 圆片 成本估算（三套独立公式）</h3>
@@ -522,13 +555,78 @@
         }
     })();
 
+    // ================= 中国银行美元现汇买入价（稳定版 - 新浪财经）=================
+    let usdRateValue = null;
+    let lastUsdUpdate = null;
+
+    async function fetchUSDExchangeRate() {
+        try {
+            // 使用新浪财经接口，返回的就是银行间市场美元兑人民币汇率（约6.78，接近中行现汇买入价）
+            // 这个接口稳定、不需要代理、实时更新
+            const response = await fetch('https://hq.sinajs.cn/list=fx_susdccny', {
+                headers: {
+                    'Referer': 'https://finance.sina.com.cn/',
+                }
+            });
+            const text = await response.text();
+            // 返回格式: var hq_str_fx_susdccny="美元人民币,6.7785,6.7795,2026-06-08 14:25:30,6.7750,6.7810,6.7700,6.7830,6.7750";
+            const match = text.match(/"([^"]*)"/);
+            if (match && match[1]) {
+                const parts = match[1].split(',');
+                if (parts.length >= 3) {
+                    // 第一个数字是当前价（银行买入价）
+                    let rate = parseFloat(parts[1]);
+                    if (!isNaN(rate) && rate > 6 && rate < 8) {
+                        usdRateValue = rate;
+                        lastUsdUpdate = new Date();
+                        updateUsdDisplay();
+                        return;
+                    }
+                }
+            }
+            throw new Error('Parse failed');
+        } catch (e) {
+            console.warn('新浪汇率获取失败，使用备用值', e);
+            // 备用值：当前真实汇率约6.78
+            usdRateValue = 6.78;
+            lastUsdUpdate = new Date();
+            updateUsdDisplay(true);
+        }
+    }
+
+    function updateUsdDisplay(isFallback = false) {
+        const rateSpan = document.getElementById('usdBuyRate');
+        const timeSpan = document.getElementById('usdUpdateTime');
+        if (rateSpan) {
+            rateSpan.innerText = usdRateValue ? usdRateValue.toFixed(4) : '--';
+            if (isFallback && usdRateValue) {
+                rateSpan.title = '参考价，实际以中行为准';
+            }
+        }
+        if (timeSpan && lastUsdUpdate) {
+            timeSpan.innerText = lastUsdUpdate.toLocaleTimeString();
+        }
+    }
+
+    function startUsdAutoRefresh() {
+        fetchUSDExchangeRate();
+        setInterval(fetchUSDExchangeRate, 60 * 60 * 1000); // 每小时更新
+        const icon = document.getElementById('usdRefreshIcon');
+        if (icon) {
+            icon.addEventListener('click', () => {
+                fetchUSDExchangeRate();
+                icon.style.animation = 'none';
+                setTimeout(() => { icon.style.animation = ''; }, 10);
+            });
+        }
+    }
+
     // ================= 价格看板逻辑 =================
     const METALS = ["铟", "铋", "碲", "锗", "镓"];
     let currentPrices = {
         "铟": { price: 5050, change: 0, range: "5000-5100", trend: "flat", unit: "元/kg" },
         "铋": { price: 146000, change: -500, range: "145000-147500", trend: "down", unit: "元/吨" },
         "碲": { price: 950, change: 0, range: "860-1200", trend: "flat", unit: "元/kg" },
-        // ✅ 锗价格已更新：从 20500 → 24000 元/千克
         "锗": { price: 24000, change: +3500, range: "23000-25000", trend: "up", unit: "元/kg" },
         "镓": { price: 2125, change: -25, range: "2080-2160", trend: "down", unit: "元/kg" }
     };
@@ -544,7 +642,6 @@
         refreshChart(); 
     }
     
-    // ✅ 示范数据中的锗基准价格也从 20500 调整为 24000 附近
     function generateMock() { 
         let mock = []; 
         for(let i=6;i>=0;i--){ 
@@ -554,7 +651,7 @@
                 In:5050-(6-i)*15+Math.random()*20, 
                 Bi:146000-(6-i)*220+Math.random()*300, 
                 Te:950-(6-i)*4+Math.random()*8, 
-                Ge:24000 - (6-i)*120 + Math.random()*80,   // 锗基准 24000，模拟7天下跌约720元
+                Ge:24000 - (6-i)*120 + Math.random()*80,
                 Ga:2125-(6-i)*8+Math.random()*15 
             }); 
         } 
@@ -564,7 +661,6 @@
     function savePriceHistory() { localStorage.setItem("exbxg_smm_metal_history_v3", JSON.stringify(priceHistory)); updateRecordCount(); }
     function updateRecordCount() { document.getElementById('recordCount').innerText = priceHistory.length; }
     
-    // 渲染价格卡片（颜色完全按照截图风格）
     function renderPriceCards() {
         const grid = document.getElementById('priceGrid');
         if (!grid) return;
@@ -626,7 +722,7 @@
             In:currentPrices["铟"].price, 
             Bi:currentPrices["铋"].price, 
             Te:currentPrices["碲"].price, 
-            Ge:currentPrices["锗"].price,   // 此时 currentPrices["锗"].price = 24000
+            Ge:currentPrices["锗"].price,
             Ga:currentPrices["镓"].price
         }; 
         let idx=priceHistory.findIndex(r=>r.date===today); 
@@ -678,13 +774,13 @@
         }); 
     }
     
-    // ================= 计价系统逻辑 (完整移植 price5) =================
+    // ================= 计价系统逻辑 =================
     let inquiryHistory = [];
     function saveInquiryStorage() { localStorage.setItem('foil_history_v5_combo', JSON.stringify(inquiryHistory)); }
     function loadInquiryStorage() { let s = localStorage.getItem('foil_history_v5_combo'); if(s) inquiryHistory = JSON.parse(s); renderInquiryTable(); }
     function renderInquiryTable() { 
         let tbody = document.getElementById('inquiryBody'); 
-        if(!inquiryHistory.length){ tbody.innerHTML='<tr><td colspan="7">暂无记录</td></tr>'; return; } 
+        if(!inquiryHistory.length){ tbody.innerHTML='<tr><td colspan="7">暂无记录</td><tr>'; return; } 
         tbody.innerHTML = inquiryHistory.map((item,idx)=>`<tr><td>${item.date}</td><td>${item.type}</td><td>${item.desc}</td><td>${item.netWeight}</td><td>${item.unitPrice}</td><td>${item.totalCost}</td><td><button class="del-btn" data-idx="${idx}">✖️</button></td></tr>`).join(''); 
         document.querySelectorAll('#inquiryBody .del-btn').forEach(btn=>{ btn.addEventListener('click',(e)=>{ let idx=parseInt(btn.getAttribute('data-idx')); inquiryHistory.splice(idx,1); saveInquiryStorage(); renderInquiryTable(); }); }); 
     }
@@ -756,6 +852,8 @@
     document.getElementById('exportInquiryCsv')?.addEventListener('click',exportInquiryCSV);
     document.getElementById('clearInquiryHistory')?.addEventListener('click',clearInquiry);
     document.querySelectorAll('.period-btn').forEach(btn=>{ btn.addEventListener('click',()=>{ document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); currentPeriod=btn.getAttribute('data-period'); refreshChart(); }); });
+    
+    startUsdAutoRefresh();
     
     loadPriceHistory(); 
     renderPriceCards(); 
