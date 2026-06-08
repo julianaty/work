@@ -528,7 +528,8 @@
         "铟": { price: 5050, change: 0, range: "5000-5100", trend: "flat", unit: "元/kg" },
         "铋": { price: 146000, change: -500, range: "145000-147500", trend: "down", unit: "元/吨" },
         "碲": { price: 950, change: 0, range: "860-1200", trend: "flat", unit: "元/kg" },
-        "锗": { price: 20500, change: +250, range: "19500-21500", trend: "up", unit: "元/kg" },
+        // ✅ 锗价格已更新：从 20500 → 24000 元/千克
+        "锗": { price: 24000, change: +3500, range: "23000-25000", trend: "up", unit: "元/kg" },
         "镓": { price: 2125, change: -25, range: "2080-2160", trend: "down", unit: "元/kg" }
     };
     
@@ -542,14 +543,24 @@
         renderHistoryTable(); 
         refreshChart(); 
     }
+    
+    // ✅ 示范数据中的锗基准价格也从 20500 调整为 24000 附近
     function generateMock() { 
         let mock = []; 
         for(let i=6;i>=0;i--){ 
             let d=new Date(); d.setDate(d.getDate()-i); 
-            mock.push({ date:d.toISOString().slice(0,10), In:5050-(6-i)*15+Math.random()*20, Bi:146000-(6-i)*220+Math.random()*300, Te:950-(6-i)*4+Math.random()*8, Ge:20500-(6-i)*70+Math.random()*50, Ga:2125-(6-i)*8+Math.random()*15 }); 
+            mock.push({ 
+                date:d.toISOString().slice(0,10), 
+                In:5050-(6-i)*15+Math.random()*20, 
+                Bi:146000-(6-i)*220+Math.random()*300, 
+                Te:950-(6-i)*4+Math.random()*8, 
+                Ge:24000 - (6-i)*120 + Math.random()*80,   // 锗基准 24000，模拟7天下跌约720元
+                Ga:2125-(6-i)*8+Math.random()*15 
+            }); 
         } 
         return mock; 
     }
+    
     function savePriceHistory() { localStorage.setItem("exbxg_smm_metal_history_v3", JSON.stringify(priceHistory)); updateRecordCount(); }
     function updateRecordCount() { document.getElementById('recordCount').innerText = priceHistory.length; }
     
@@ -610,7 +621,14 @@
     
     function saveTodayPrice(){ 
         let today=new Date().toISOString().slice(0,10); 
-        let newRec={date:today, In:currentPrices["铟"].price, Bi:currentPrices["铋"].price, Te:currentPrices["碲"].price, Ge:currentPrices["锗"].price, Ga:currentPrices["镓"].price}; 
+        let newRec={
+            date:today, 
+            In:currentPrices["铟"].price, 
+            Bi:currentPrices["铋"].price, 
+            Te:currentPrices["碲"].price, 
+            Ge:currentPrices["锗"].price,   // 此时 currentPrices["锗"].price = 24000
+            Ga:currentPrices["镓"].price
+        }; 
         let idx=priceHistory.findIndex(r=>r.date===today); 
         if(idx!==-1) priceHistory[idx]=newRec; 
         else priceHistory.push(newRec); 
